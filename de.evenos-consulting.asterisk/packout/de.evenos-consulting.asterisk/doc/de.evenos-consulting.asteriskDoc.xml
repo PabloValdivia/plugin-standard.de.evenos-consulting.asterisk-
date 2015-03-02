@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/css" href="idempiereDocument.css"?><idempiereDocument>
+    <header>de.evenos-consulting.asterisk Package Description</header>
+    <H1>Package Name:</H1>
+    <packagename>de.evenos-consulting.asterisk</packagename>
+    <H1>Author:</H1>
+    <Name:/>
+    <H1>Email Address:</H1>
+    <Email/>
+    <H1>Created:</H1>
+    <Date>2015-02-26 14:41:45.058</Date>
+    <H1>Updated:</H1>
+    <Date>2015-02-26 14:43:07.875</Date>
+    <H1>Description:</H1>
+    <description>-DisplayType for WPhoneNumberEditor
+-User Window
+-Messages
+-SysConfig Values</description>
+    <H1>Instructions:</H1>
+    <instructions/>
+    <H1>Files in Package:</H1>
+    <file>File: PackOut.xml</file>
+    <filedirectory>Directory: \dict\</filedirectory>
+    <filenotes>Notes: Contains all application/object settings for package</filenotes>
+    <H1>Client:</H1>
+    <Client>0-SYSTEM-System</Client>
+</idempiereDocument>
