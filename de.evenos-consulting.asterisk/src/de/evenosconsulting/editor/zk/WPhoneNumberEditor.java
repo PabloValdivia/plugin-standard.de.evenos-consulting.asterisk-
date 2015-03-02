@@ -243,6 +243,9 @@ public class WPhoneNumberEditor extends WEditor implements ContextMenuListener, 
 
 	@Override
 	public void onFailure(LiveException cause) {
+		Executions.schedule(desktop, this, new Event(ON_CHANGE_CALL_ICON_ENABLE_EVENT));
+		dialing = false;
+		log.severe(cause.getLocalizedMessage());
 	}
 
 	@Override

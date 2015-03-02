@@ -20,6 +20,7 @@ import org.compiere.model.MSysConfig;
 import org.compiere.util.CCache;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -65,16 +66,18 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 						Env.getAD_Org_ID(Env.getCtx()));
 				String sippassword = MSysConfig.getValue("de.evenos-consulting.asterisk.sippassword", "",
 						Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+				int sipport = MSysConfig.getIntValue("de.evenos-consulting.asterisk.sipport", 0,
+						Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
 
 				// Connect to the asterisk server
-				server = new DefaultAsteriskServer(siphost, sipuser, sippassword);
+				server = new DefaultAsteriskServer(siphost, sipport, sipuser, sippassword);
 				server.addAsteriskServerListener(this);
 				Env.getCtx().put("#Asterisk_Connected", true);
 				log.info("Successfully connected to Asterisk Server");
 			} catch (Exception excep) {
 				// If an error occures while connecting, tell the context we are not connected to asterisk
 				Env.getCtx().put("#Asterisk_Connected", false);
-				log.warning("Couldn't connect to Asterisk. Check your configuration or contact an Administrator");
+				log.warning("Couldn't connect to Asterisk. Check your configuration or contact an Administrator (Asterisk message: " + excep.getLocalizedMessage() + ")");
 			}
 		}
 	}
@@ -121,7 +124,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 		}
 
 		String sipchannel = user.getSIPChannel();
-		if (!sipchannel.startsWith("SIP/"))
+		if (!sipchannel.startsWith("SIP/") && !sipchannel.startsWith("PJSIP/"))
 			sipchannel = "SIP/" + sipchannel;
 
 		log.finest("SIP-Channel for User " + user + " is " + sipchannel);
@@ -178,7 +181,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			// Build a phone number which asterisk understands
 			String phonePrefix = MSysConfig.getValue("de.evenos-consulting.asterisk.phoneprefix", "", Env.getAD_Client_ID(Env.getCtx()),
 					Env.getAD_Org_ID(Env.getCtx()));
-			String callableNumber = phonePrefix != null && !phonePrefix.isEmpty() ? phonePrefix : "";
+			String callableNumber = Util.isEmpty(phonePrefix, true) ? "" : phonePrefix;
 			callableNumber += numberToCall;
 
 			callableNumber = numberToCall.replaceAll("[+]49", "0"); // TODO: Remove this and let Asterisk Server decide how to handle
@@ -195,7 +198,10 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 
 			OriginateAction action = new OriginateAction();
 			action.setExten(callableNumber);
-			action.setChannel(a.getSIPChannelForCurrentUser(session));
+			String sipChannel = a.getSIPChannelForCurrentUser(session);
+			action.setChannel(sipChannel);
+			String sipExtension = sipChannel.substring(sipChannel.indexOf("/") + 1);
+			action.setCallerId(Env.getContext(Env.getCtx(), "#AD_User_Name") + "<" + sipExtension + ">");
 			action.setContext(sipContext);
 			action.setPriority(1);
 			action.setTimeout(20000L);
