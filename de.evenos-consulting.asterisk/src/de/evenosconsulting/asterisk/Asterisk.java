@@ -34,13 +34,13 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 	private final static String ON_ASTERISK_CHANNEL_CHANGED = "onASTERISK_CHANNEL_CHANGED";
 	private final static String ON_ASTERISK_CALLER_ID_CHANGED = "onASTERISK_CALLER_ID_CHANGED";
 
-	private static Map<String, Asterisk> asterisks = new HashMap<>();
-	private static CCache<Integer, MUser_Asterisk> users = new CCache<>("MUser_Asterisk_Asterisk_Cache", 10);
-	private static CCache<Integer, MSession> sessions = new CCache<>("MSession_Asterisk_Cache", 10);
+	private static Map<String, Asterisk> asterisks = new HashMap<String, Asterisk>();
+	private static CCache<Integer, MUser_Asterisk> users = new CCache<Integer, MUser_Asterisk>("MUser_Asterisk_Asterisk_Cache", 10);
+	private static CCache<Integer, MSession> sessions = new CCache<Integer, MSession>("MSession_Asterisk_Cache", 10);
 
 	private AsteriskServer server;
 	private Desktop desktop;
-	private Map<AsteriskChannel, CallPopup> popups = new HashMap<>();
+	private Map<AsteriskChannel, CallPopup> popups = new HashMap<AsteriskChannel, CallPopup>();
 	private CLogger log = CLogger.getCLogger(Asterisk.class);
 	private static CLogger classLog = CLogger.getCLogger(Asterisk.class);
 
