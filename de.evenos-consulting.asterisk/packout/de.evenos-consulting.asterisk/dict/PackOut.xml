@@ -14,95 +14,14 @@
         <IsOrderByValue>false</IsOrderByValue>
         <AD_Reference_UU>0fb66784-978e-4d08-9627-9f1fc32301cd</AD_Reference_UU>
         <AD_Reference_Trl type="translation">
-            <Help>This new DataType is used to replace the String editors of any phone number so you can initiate a call from within iDempiere via Asterisk.</Help>
-            <Name>PhoneNumber</Name>
-            <Description>Phone Number DataType for Asterisk integration</Description>
+            <Help>Este tipo de datos es usado para reemplazar editores de cadena con un número telefónico que permite iniciar una llamada desde iDempiere via Asterisk.</Help>
+            <Name>Teléfono</Name>
+            <Description>Tipo de datos Teléfono para integración con Asterisk</Description>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
             <IsTranslated>false</IsTranslated>
         </AD_Reference_Trl>
     </AD_Reference>
-    <AD_Element type="table">
-        <AD_Element_ID>53676</AD_Element_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_Element_ID>53676</AD_Element_ID>
-        <IsActive>true</IsActive>
-        <ColumnName>IsInPayroll</ColumnName>
-        <Name>Is In Payroll</Name>
-        <Description>Defined if any User Contact will be used for Calculate Payroll</Description>
-        <Help/>
-        <PrintName>Is In Payroll</PrintName>
-        <PO_Description/>
-        <PO_Help/>
-        <PO_Name/>
-        <PO_PrintName/>
-        <EntityType>EE02</EntityType>
-        <AD_Element_UU>b1390e25-49f6-4ff3-b79d-05d7fef09d87</AD_Element_UU>
-        <AD_Element_Trl type="translation">
-            <Help/>
-            <PO_Description/>
-            <PO_Help/>
-            <Name>Está en Nómina</Name>
-            <Description>Define si un usuario será utilizado para calculo de nómina</Description>
-            <PrintName>Está en Nómina</PrintName>
-            <PO_Name/>
-            <PO_PrintName/>
-            <AD_Language>es_CO</AD_Language>
-            <IsActive>true</IsActive>
-            <IsTranslated>true</IsTranslated>
-        </AD_Element_Trl>
-    </AD_Element>
-    <AD_Column type="table">
-        <AD_Column_ID>56294</AD_Column_ID>
-        <IsSyncDatabase>Y</IsSyncDatabase>
-        <AD_Table_ID reference="id">114</AD_Table_ID>
-        <AD_Reference_Value_ID reference="id"/>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_Column_ID>56294</AD_Column_ID>
-        <Version>0</Version>
-        <Name>Is In Payroll</Name>
-        <Description>Defined if any User Contact will be used for Calculate Payroll</Description>
-        <Help/>
-        <AD_Val_Rule_ID reference="id"/>
-        <ColumnName>IsInPayroll</ColumnName>
-        <DefaultValue>N</DefaultValue>
-        <FieldLength>1</FieldLength>
-        <IsKey>false</IsKey>
-        <IsParent>false</IsParent>
-        <IsMandatory>true</IsMandatory>
-        <IsTranslated>false</IsTranslated>
-        <IsIdentifier>false</IsIdentifier>
-        <SeqNo>0</SeqNo>
-        <IsEncrypted>N</IsEncrypted>
-        <AD_Reference_ID reference="id">20</AD_Reference_ID>
-        <IsActive>true</IsActive>
-        <VFormat/>
-        <Callout/>
-        <AD_Element_ID reference="id">53676</AD_Element_ID>
-        <IsUpdateable>true</IsUpdateable>
-        <AD_Process_ID reference="id"/>
-        <ValueMin/>
-        <ValueMax/>
-        <IsSelectionColumn>false</IsSelectionColumn>
-        <ReadOnlyLogic/>
-        <EntityType>EE02</EntityType>
-        <IsAlwaysUpdateable>false</IsAlwaysUpdateable>
-        <ColumnSQL/>
-        <MandatoryLogic/>
-        <IsAutocomplete>false</IsAutocomplete>
-        <IsAllowLogging>true</IsAllowLogging>
-        <FormatPattern/>
-        <AD_Chart_ID reference="id"/>
-        <AD_Column_UU>779ec08e-e7f7-4303-9418-94f1d0a0305f</AD_Column_UU>
-        <IsAllowCopy>true</IsAllowCopy>
-        <SeqNoSelection/>
-        <IsToolbarButton>N</IsToolbarButton>
-        <IsSecure>false</IsSecure>
-        <FKConstraintName/>
-        <FKConstraintType/>
-    </AD_Column>
     <AD_Element type="table">
         <AD_Client_ID>0</AD_Client_ID>
         <AD_Org_ID>0</AD_Org_ID>
@@ -180,125 +99,6 @@
         <FKConstraintName/>
         <FKConstraintType>N</FKConstraintType>
     </AD_Column>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200246</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200246</AD_TableIndex_ID>
-        <AD_TableIndex_UU>d811197d-4cc4-45aa-88b1-19fe8ccc5a4d</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_user_uu_idx</Name>
-        <AD_Table_ID reference="id">114</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200277</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200277</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>73c3b85c-e29e-4e57-98c2-9be1cb6008d1</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60528</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200246</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200247</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200247</AD_TableIndex_ID>
-        <AD_TableIndex_UU>ce9cb525-181f-43c0-af75-afd37bdb329b</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_user_email</Name>
-        <AD_Table_ID reference="id">114</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>false</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200278</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200278</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>ed85b21a-ff96-49a9-80e2-113cbf532aeb</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">5396</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200247</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_Field type="table">
-        <AD_Field_ID>200404</AD_Field_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_Field_ID>200404</AD_Field_ID>
-        <Name>Is In Payroll</Name>
-        <Description>Defined if any User Contact will be used for Calculate Payroll</Description>
-        <Help/>
-        <AD_Tab_ID reference="id">118</AD_Tab_ID>
-        <AD_Column_ID reference="id">56294</AD_Column_ID>
-        <IsDisplayed>false</IsDisplayed>
-        <DisplayLogic/>
-        <DisplayLength>1</DisplayLength>
-        <SeqNo>0</SeqNo>
-        <SortNo/>
-        <IsSameLine>false</IsSameLine>
-        <IsHeading>false</IsHeading>
-        <IsFieldOnly>false</IsFieldOnly>
-        <IsEncrypted>false</IsEncrypted>
-        <IsActive>true</IsActive>
-        <IsReadOnly>false</IsReadOnly>
-        <IsCentrallyMaintained>true</IsCentrallyMaintained>
-        <AD_FieldGroup_ID reference="id"/>
-        <EntityType>EE02</EntityType>
-        <ObscureType/>
-        <AD_Reference_ID reference="id"/>
-        <IsMandatory/>
-        <DefaultValue/>
-        <AD_Reference_Value_ID reference="id"/>
-        <AD_Val_Rule_ID reference="id"/>
-        <Included_Tab_ID reference="id"/>
-        <AD_Field_UU>88e0446c-706d-4770-b27b-2c10622d40ba</AD_Field_UU>
-        <IsAllowCopy/>
-        <IsDisplayedGrid>false</IsDisplayedGrid>
-        <SeqNoGrid>0</SeqNoGrid>
-        <XPosition>1</XPosition>
-        <ColumnSpan>1</ColumnSpan>
-        <NumLines>1</NumLines>
-        <IsQuickEntry>false</IsQuickEntry>
-        <IsUpdateable/>
-        <IsAlwaysUpdateable/>
-        <MandatoryLogic/>
-        <ReadOnlyLogic/>
-        <IsToolbarButton/>
-        <IsDefaultFocus>false</IsDefaultFocus>
-        <IsAdvancedField>false</IsAdvancedField>
-        <AD_Field_Trl type="translation">
-            <Help/>
-            <Description>Define si un usuario será utilizado para calculo de nómina</Description>
-            <Name>Está en Nómina</Name>
-            <AD_Language>es_CO</AD_Language>
-            <IsActive>true</IsActive>
-            <IsTranslated>true</IsTranslated>
-        </AD_Field_Trl>
-    </AD_Field>
     <AD_Field type="table">
         <AD_Client_ID>0</AD_Client_ID>
         <AD_Org_ID>0</AD_Org_ID>
@@ -352,230 +152,6 @@
             <IsTranslated>false</IsTranslated>
         </AD_Field_Trl>
     </AD_Field>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200475</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200475</AD_TableIndex_ID>
-        <AD_TableIndex_UU>a511e2c7-4966-493f-a7b5-b54febe093cf</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>c_orgassignment_uu_idx</Name>
-        <AD_Table_ID reference="id">585</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200553</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200553</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>513c80cd-2cd8-4b7e-84ad-13942e12f12f</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60720</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200475</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200107</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200107</AD_TableIndex_ID>
-        <AD_TableIndex_UU>e6c67bd9-6acb-4acf-b7d6-c2a5293f56ca</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_ldapaccess_uu_idx</Name>
-        <AD_Table_ID reference="id">904</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200115</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200115</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>6ca77074-5e09-463e-832a-f12be6f52a97</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60429</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200107</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200248</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200248</AD_TableIndex_ID>
-        <AD_TableIndex_UU>21d0e54c-e64b-4f5e-b595-b7244bc0fb0e</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_user_orgaccess_uu_idx</Name>
-        <AD_Table_ID reference="id">769</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200279</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200279</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>05f0305a-0bd8-45c7-8c98-f54686bf0430</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60534</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200248</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200249</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200249</AD_TableIndex_ID>
-        <AD_TableIndex_UU>c2a35b12-b8cd-4d7c-ae85-c8fed1392e35</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_user_roles_uu_idx</Name>
-        <AD_Table_ID reference="id">157</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200280</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200280</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>3f4d2b8f-0b1f-4cf0-9ebf-0b34c7ddf330</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60536</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200249</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200256</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200256</AD_TableIndex_ID>
-        <AD_TableIndex_UU>213e5ff7-13d9-42e0-be03-a17f6c672ddf</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_userquery_uu_idx</Name>
-        <AD_Table_ID reference="id">814</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200287</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200287</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>fbba3899-4f7f-4578-aae0-becefd7e171b</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60535</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200256</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200255</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200255</AD_TableIndex_ID>
-        <AD_TableIndex_UU>5a860b04-4468-4b2f-8dde-7522c0771b88</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_usermail_uu_idx</Name>
-        <AD_Table_ID reference="id">782</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200286</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200286</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>3be2544a-d27c-496e-a10c-2438e408b260</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60533</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200255</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
-    <AD_TableIndex type="table">
-        <AD_TableIndex_ID>200250</AD_TableIndex_ID>
-        <AD_Client_ID>0</AD_Client_ID>
-        <AD_Org_ID>0</AD_Org_ID>
-        <AD_TableIndex_ID>200250</AD_TableIndex_ID>
-        <AD_TableIndex_UU>f142abc5-3e59-448a-b935-df8dd9c58a4d</AD_TableIndex_UU>
-        <Description/>
-        <EntityType>D</EntityType>
-        <IsActive>true</IsActive>
-        <Name>ad_user_substitute_uu_idx</Name>
-        <AD_Table_ID reference="id">642</AD_Table_ID>
-        <Help/>
-        <IsCreateConstraint>false</IsCreateConstraint>
-        <IsUnique>true</IsUnique>
-        <Processing>false</Processing>
-        <AD_Message_ID reference="id"/>
-        <TableIndexDrop/>
-        <IsKey>false</IsKey>
-        <AD_IndexColumn type="table">
-            <AD_IndexColumn_ID>200281</AD_IndexColumn_ID>
-            <AD_Client_ID>0</AD_Client_ID>
-            <AD_Org_ID>0</AD_Org_ID>
-            <AD_IndexColumn_ID>200281</AD_IndexColumn_ID>
-            <AD_IndexColumn_UU>00d8d907-dd08-4f96-9723-ceae54131821</AD_IndexColumn_UU>
-            <EntityType>D</EntityType>
-            <IsActive>true</IsActive>
-            <AD_Column_ID reference="id">60537</AD_Column_ID>
-            <AD_TableIndex_ID reference="id">200250</AD_TableIndex_ID>
-            <ColumnSQL/>
-            <SeqNo>1</SeqNo>
-        </AD_IndexColumn>
-    </AD_TableIndex>
     <AD_Message type="table">
         <AD_Client_ID>0</AD_Client_ID>
         <AD_Org_ID>0</AD_Org_ID>
@@ -587,7 +163,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>23635704-6998-4812-9660-d5b41b8e4098</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Dialing</MsgText>
+            <MsgText>Marcando</MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -605,7 +181,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>ba318ee9-4cce-44ec-9764-fc892e8de1bf</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Hungup</MsgText>
+            <MsgText>Colgar</MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -623,7 +199,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>023edbde-8a36-4441-9a80-45c7b0901989</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Ringing</MsgText>
+            <MsgText>Timbrando</MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -641,7 +217,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>416b7f85-e7f5-4780-acfc-8401c924f316</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Up</MsgText>
+            <MsgText>Arriba</MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -659,7 +235,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>02f613d9-d529-4cc9-a04a-a168b94b8335</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Connection to asterisk server is not available. Please check your configuration or contact an administrator.</MsgText>
+            <MsgText>La conexión con el servidor asterisk no está disponible.  Chequee su configuración o contacte un administrador.</MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -677,7 +253,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>2ef5d3c6-e7e5-4f11-b08d-5cf2835c5b9f</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Status: </MsgText>
+            <MsgText>Estado: </MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -695,7 +271,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>8f167f32-f48d-40b3-a6d9-0a72ab2ea72a</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Duration: </MsgText>
+            <MsgText>Duración: </MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -713,7 +289,7 @@
         <EntityType>U</EntityType>
         <AD_Message_UU>ce46d83e-0f08-4521-96e0-2e79fd8d672d</AD_Message_UU>
         <AD_Message_Trl type="translation">
-            <MsgText>Talking to: </MsgText>
+            <MsgText>Hablando a: </MsgText>
             <MsgTip/>
             <AD_Language>es_CO</AD_Language>
             <IsActive>true</IsActive>
@@ -725,10 +301,10 @@
         <AD_Org_ID>0</AD_Org_ID>
         <IsActive>true</IsActive>
         <Name>de.evenos-consulting.asterisk.sipcontext</Name>
-        <Value>context</Value>
+        <Value>default</Value>
         <Description/>
         <EntityType>U</EntityType>
-        <ConfigurationLevel>S</ConfigurationLevel>
+        <ConfigurationLevel>O</ConfigurationLevel>
         <AD_SysConfig_UU>f2f5eded-4434-4788-a434-09fd10f74767</AD_SysConfig_UU>
     </AD_SysConfig>
     <AD_SysConfig type="table">
@@ -739,7 +315,7 @@
         <Value>password</Value>
         <Description/>
         <EntityType>U</EntityType>
-        <ConfigurationLevel>S</ConfigurationLevel>
+        <ConfigurationLevel>O</ConfigurationLevel>
         <AD_SysConfig_UU>918e0402-6edc-40a5-af93-c9187ade3346</AD_SysConfig_UU>
     </AD_SysConfig>
     <AD_SysConfig type="table">
@@ -750,7 +326,7 @@
         <Value>user</Value>
         <Description/>
         <EntityType>U</EntityType>
-        <ConfigurationLevel>S</ConfigurationLevel>
+        <ConfigurationLevel>O</ConfigurationLevel>
         <AD_SysConfig_UU>2afea295-ba73-4881-8725-e1c10cc13367</AD_SysConfig_UU>
     </AD_SysConfig>
     <AD_SysConfig type="table">
@@ -761,7 +337,33 @@
         <Value>host</Value>
         <Description/>
         <EntityType>U</EntityType>
-        <ConfigurationLevel>S</ConfigurationLevel>
+        <ConfigurationLevel>O</ConfigurationLevel>
         <AD_SysConfig_UU>a3cffd12-293f-40d3-903a-a0c6cad113b9</AD_SysConfig_UU>
     </AD_SysConfig>
+    <AD_SysConfig type="table">
+        <AD_Client_ID>0</AD_Client_ID>
+        <AD_Org_ID>0</AD_Org_ID>
+        <IsActive>true</IsActive>
+        <Name>de.evenos-consulting.asterisk.phoneprefix</Name>
+        <Value> </Value>
+        <Description/>
+        <EntityType>U</EntityType>
+        <ConfigurationLevel>O</ConfigurationLevel>
+        <AD_SysConfig_UU>11715a76-dfdf-415c-a68a-4d07163191f2</AD_SysConfig_UU>
+    </AD_SysConfig>
+    <AD_SysConfig type="table">
+        <AD_Client_ID>0</AD_Client_ID>
+        <AD_Org_ID>0</AD_Org_ID>
+        <IsActive>true</IsActive>
+        <Name>de.evenos-consulting.asterisk.sipport</Name>
+        <Value>0</Value>
+        <Description/>
+        <EntityType>U</EntityType>
+        <ConfigurationLevel>O</ConfigurationLevel>
+        <AD_SysConfig_UU>07fdafe8-43da-48c6-b14c-9d809daedeea</AD_SysConfig_UU>
+    </AD_SysConfig>
+    <SQLStatement type="custom">
+        <DBType>ALL</DBType>
+	<statement>update ad_column set ad_reference_id=200077 where ad_element_id in (505, 506) and ad_reference_id!=200077</statement>
+    </SQLStatement>
 </idempiere>
