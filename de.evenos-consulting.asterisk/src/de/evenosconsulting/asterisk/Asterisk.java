@@ -66,8 +66,8 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 						Env.getAD_Org_ID(Env.getCtx()));
 				String sippassword = MSysConfig.getValue("de.evenos-consulting.asterisk.sippassword", "",
 						Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
-				int sipport = MSysConfig.getIntValue("de.evenos-consulting.asterisk.sipport", 0,
-						Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+				int sipport = MSysConfig.getIntValue("de.evenos-consulting.asterisk.sipport", 0, Env.getAD_Client_ID(Env.getCtx()),
+						Env.getAD_Org_ID(Env.getCtx()));
 
 				// Connect to the asterisk server
 				server = new DefaultAsteriskServer(siphost, sipport, sipuser, sippassword);
@@ -77,7 +77,8 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			} catch (Exception excep) {
 				// If an error occures while connecting, tell the context we are not connected to asterisk
 				Env.getCtx().put("#Asterisk_Connected", false);
-				log.warning("Couldn't connect to Asterisk. Check your configuration or contact an Administrator (Asterisk message: " + excep.getLocalizedMessage() + ")");
+				log.warning("Couldn't connect to Asterisk. Check your configuration or contact an Administrator (Asterisk message: "
+						+ excep.getLocalizedMessage() + ")");
 			}
 		}
 	}
@@ -183,9 +184,8 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 					Env.getAD_Org_ID(Env.getCtx()));
 			String callableNumber = Util.isEmpty(phonePrefix, true) ? "" : phonePrefix;
 			callableNumber += numberToCall;
-
-			callableNumber = numberToCall.replaceAll("[+]49", "0"); // TODO: Remove this and let Asterisk Server decide how to handle
-																	// international phone numbers
+			callableNumber = callableNumber.replaceAll("[+]49", "0"); // TODO: Remove this and let Asterisk Server decide how to handle
+																		// international phone numbers
 			callableNumber = callableNumber.replaceAll("[+]", "00");
 			callableNumber = callableNumber.replaceAll("[^\\d]", "");
 
