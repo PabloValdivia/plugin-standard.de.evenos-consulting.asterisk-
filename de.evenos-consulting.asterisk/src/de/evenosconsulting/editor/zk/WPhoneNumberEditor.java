@@ -20,6 +20,7 @@ import org.compiere.model.MCountry;
 import org.compiere.util.CLogger;
 import org.compiere.util.Env;
 import org.compiere.util.Msg;
+import org.compiere.util.Util;
 import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.event.Event;
@@ -138,7 +139,6 @@ public class WPhoneNumberEditor extends WEditor implements ContextMenuListener, 
 					FDialog.error(0,Msg.getMsg(Env.getLanguage(Env.getCtx()), "de.evenos-consulting.asterisk.notconnected"));
 					return;
 				}
-				dialing = true;
 				initiateCall();
 			} else {
 				if (asteriskChannel != null) {
@@ -212,12 +212,14 @@ public class WPhoneNumberEditor extends WEditor implements ContextMenuListener, 
 	}
 
 	private void initiateCall() {
+		if(Util.isEmpty(oldValue, true))
+			return;
 		try {
+			dialing = true;
 			Asterisk.originateAsync(oldValue, this);
 
 			// Disable Call button till call is instantiated
 			Executions.schedule(desktop, this, new Event(ON_CHANGE_CALL_ICON_DISABLE_EVENT));
-
 		} catch (Exception e) {
 			log.severe("Error while initiating call to " + oldValue + ": " + e);
 		}

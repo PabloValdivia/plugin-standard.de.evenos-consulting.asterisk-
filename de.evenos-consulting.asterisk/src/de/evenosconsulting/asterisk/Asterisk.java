@@ -11,6 +11,7 @@ import org.asteriskjava.live.AsteriskServer;
 import org.asteriskjava.live.AsteriskServerListener;
 import org.asteriskjava.live.ChannelState;
 import org.asteriskjava.live.DefaultAsteriskServer;
+import org.asteriskjava.live.ManagerCommunicationException;
 import org.asteriskjava.live.MeetMeUser;
 import org.asteriskjava.live.OriginateCallback;
 import org.asteriskjava.live.internal.AsteriskAgentImpl;
@@ -74,9 +75,20 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 				server.addAsteriskServerListener(this);
 				Env.getCtx().put("#Asterisk_Connected", true);
 				log.info("Successfully connected to Asterisk Server");
+
+				try {
+					if (server.isModuleLoaded("app_meetme")) {
+						Env.getCtx().put("#Asterisk_MeetMe_Enabled", true);
+						log.info("Asterisk MeetMe Module is available");
+					}
+				} catch (ManagerCommunicationException e) {
+					Env.getCtx().put("#Asterisk_MeetMe_Enabled", false);
+					log.info("Asterisk MeetMe Module is not available!");
+				}
 			} catch (Exception excep) {
 				// If an error occures while connecting, tell the context we are not connected to asterisk
 				Env.getCtx().put("#Asterisk_Connected", false);
+				Env.getCtx().put("#Asterisk_MeetMe_Enabled", false);
 				log.warning("Couldn't connect to Asterisk. Check your configuration or contact an Administrator (Asterisk message: "
 						+ excep.getLocalizedMessage() + ")");
 			}
@@ -125,8 +137,10 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 		}
 
 		String sipchannel = user.getSIPChannel();
-		if (!sipchannel.startsWith("SIP/") && !sipchannel.startsWith("PJSIP/"))
+		if (!sipchannel.startsWith("SIP/") && !sipchannel.startsWith("PJSIP/")) {
+			// TODO: System Configurator switch for SIP/PJSIP, maybe de.evenos-conuslting.asterisk.siptype
 			sipchannel = "SIP/" + sipchannel;
+		}
 
 		log.finest("SIP-Channel for User " + user + " is " + sipchannel);
 
@@ -180,14 +194,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 	public static void originateAsync(String numberToCall, OriginateCallback cb) {
 		try {
 			// Build a phone number which asterisk understands
-			String phonePrefix = MSysConfig.getValue("de.evenos-consulting.asterisk.phoneprefix", "", Env.getAD_Client_ID(Env.getCtx()),
-					Env.getAD_Org_ID(Env.getCtx()));
-			String callableNumber = Util.isEmpty(phonePrefix, true) ? "" : phonePrefix;
-			callableNumber += numberToCall;
-			callableNumber = callableNumber.replaceAll("[+]49", "0"); // TODO: Remove this and let Asterisk Server decide how to handle
-																		// international phone numbers
-			callableNumber = callableNumber.replaceAll("[+]", "00");
-			callableNumber = callableNumber.replaceAll("[^\\d]", "");
+			String callableNumber = getCallableNumber(numberToCall);
 
 			String sipContext = MSysConfig.getValue("de.evenos-consulting.asterisk.sipcontext", "", Env.getAD_Client_ID(Env.getCtx()),
 					Env.getAD_Org_ID(Env.getCtx()));
@@ -212,6 +219,30 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 		}
 	}
 
+	public static String getCallableNumber(String numberToCall) {
+		String callableNumber = null;
+		if (!numberToCall.startsWith("SIP") && !numberToCall.startsWith("PJSIP")) {
+			String phonePrefix = MSysConfig.getValue("de.evenos-consulting.asterisk.phoneprefix", "", Env.getAD_Client_ID(Env.getCtx()),
+					Env.getAD_Org_ID(Env.getCtx()));
+			callableNumber = Util.isEmpty(phonePrefix, true) ? "" : phonePrefix;
+			callableNumber += numberToCall;
+
+			
+			// FIXME: Remove this and let Asterisk Server decide how to handle international numbers (only for testing)
+			callableNumber = callableNumber.replaceAll("[+]49", "0");
+
+			//TODO: Use SysConfig switch to determine if + should get replaced e.g. de.evenos-consulting.asterisk.replacepluswithzerozero
+			callableNumber = callableNumber.replaceAll("[+]", "00"); 
+			callableNumber = callableNumber.replaceAll("[^\\d]", "");
+		} else {
+			// Calling internal phones where SIP line equals the asterisk extension for internal calls, e. g. Phone2="SIP/50" then
+			// extension 50 is called. Would also work with e. g. "SIP/John" and asterisk extension "John"
+			if (numberToCall.indexOf("/") > -1)
+				callableNumber = numberToCall.substring(numberToCall.indexOf("/") + 1);
+		}
+		return callableNumber;
+	}
+
 	@Override
 	public void onEvent(Event evt) throws Exception {
 
@@ -220,7 +251,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 				AsteriskChannelSwitch acswitch = (AsteriskChannelSwitch) evt.getData();
 				CallPopup popup = popups.get(acswitch.oldChannel);
 				if (popup != null) {
-					popup.setAsteriskChannel(acswitch.newChannel);
+					// popup.setAsteriskChannel(acswitch.newChannel);
 					popups.remove(acswitch.oldChannel);
 					popups.put(acswitch.newChannel, popup);
 					String title = acswitch.newChannel.getCallerId().getNumber();
@@ -263,11 +294,9 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_UPDATE_TITLE_EVENT, null, title));
 
 		Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_UPDATE_STATUS_EVENT, null, channel.getState()));
-
-		if (channel.getState().equals(ChannelState.HUNGUP)) {
+		Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_ENABLE_TRANSFER, null, channel));
+		if (channel.getState().equals(ChannelState.HUNGUP))
 			removePopup(channel);
-		}
-
 	}
 
 	private CallPopup createPopup(AsteriskChannel channel) {
