@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language-addon>
+	<addon-name>de.evenos-consulting.asterisk</addon-name>
+	<language-name>xul/html</language-name>
+
+	<version>
+		<zk-version>6.5.0</zk-version>
+	</version>
+
+	<stylesheet	href="/theme/default/css/de.evenos-consulting.asterisk.css.dsp"
+		type="text/css" />
+
+</language-addon>
