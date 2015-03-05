@@ -136,7 +136,7 @@ public class WPhoneNumberEditor extends WEditor implements ContextMenuListener, 
 		if (event.getTarget() != null && event.getTarget().equals(getComponent().getButton())) {
 			if (asteriskChannel == null && dialing == false) {
 				if (Env.getCtx().get("#Asterisk_Connected") == null || Env.getCtx().get("#Asterisk_Connected").toString().equals("false")) {
-					FDialog.error(0,Msg.getMsg(Env.getLanguage(Env.getCtx()), "de.evenos-consulting.asterisk.notconnected"));
+					FDialog.error(0, Msg.getMsg(Env.getLanguage(Env.getCtx()), "de.evenos-consulting.asterisk.notconnected"));
 					return;
 				}
 				initiateCall();
@@ -182,7 +182,7 @@ public class WPhoneNumberEditor extends WEditor implements ContextMenuListener, 
 			if (phoneUtil.isValidNumber(validatedNumber))
 				retVal = phoneUtil.format(validatedNumber, PhoneNumberFormat.INTERNATIONAL);
 		} catch (NumberParseException e) {
-			log.severe("Error during phone number formatting: " + e);
+			log.warning("Error during phone number formatting: " + e);
 		}
 
 		return retVal;
@@ -212,23 +212,19 @@ public class WPhoneNumberEditor extends WEditor implements ContextMenuListener, 
 	}
 
 	private void initiateCall() {
-		if(Util.isEmpty(oldValue, true))
+		if (Util.isEmpty(oldValue, true))
 			return;
-		try {
-			dialing = true;
-			Asterisk.originateAsync(oldValue, this);
 
-			// Disable Call button till call is instantiated
-			Executions.schedule(desktop, this, new Event(ON_CHANGE_CALL_ICON_DISABLE_EVENT));
-		} catch (Exception e) {
-			log.severe("Error while initiating call to " + oldValue + ": " + e);
-		}
+		Asterisk.originateAsync(oldValue, this);
+
 	}
 
 	@Override
 	public void onDialing(AsteriskChannel channel) {
+		dialing = true;
 		asteriskChannel = channel;
 		channel.addPropertyChangeListener(this);
+		Executions.schedule(desktop, this, new Event(ON_CHANGE_CALL_ICON_DISABLE_EVENT));
 	}
 
 	@Override
@@ -245,8 +241,10 @@ public class WPhoneNumberEditor extends WEditor implements ContextMenuListener, 
 
 	@Override
 	public void onFailure(LiveException cause) {
-		Executions.schedule(desktop, this, new Event(ON_CHANGE_CALL_ICON_ENABLE_EVENT));
 		dialing = false;
+		asteriskChannel = null;
+		Executions.schedule(desktop, this, new Event(ON_CHANGE_CALL_ICON_ENABLE_EVENT));
+		Executions.schedule(desktop, this, new Event(ON_CHANGE_CALL_ICON_TO_CALL_EVENT));
 		log.severe(cause.getLocalizedMessage());
 	}
 

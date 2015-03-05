@@ -14,6 +14,7 @@ import org.adempiere.webui.panel.HeaderPanel;
 import org.adempiere.webui.window.FDialog;
 import org.asteriskjava.live.AsteriskChannel;
 import org.asteriskjava.live.ChannelState;
+import org.asteriskjava.live.MeetMeRoom;
 import org.compiere.model.MSysConfig;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -45,11 +46,13 @@ public class CallPopup extends Window implements EventListener<Event> {
 	public static final String ON_CALLPOPUP_UPDATE_STATUS_EVENT = "onUPDATE_STATUS_EVENT";
 	public static final String ON_CALLPOPUP_UPDATE_TITLE_EVENT = "onUPDATE_TITLE_EVENT";
 	public static final String ON_CALLPOPUP_ENABLE_TRANSFER = "onCALLPOPUP_ENABLE_TRANSFER";
-	// public static final String ON_CALLPOPUP_SWITCH_CHANNEL = "onCALLPOPUP_ENABLE_TRANSFER";
 
 	public static final String CALLPOPUP_TITLE_LABEL = "de.evenos-consulting.asterisk.title";
 	public static final String CALLPOPUP_STATUS_LABEL = "de.evenos-consulting.asterisk.status";
 	public static final String CALLPOPUP_TIME_LABEL = "de.evenos-consulting.asterisk.time";
+	public static final String CALLPOPUP_MANUAL_NUMBER_LABEL = "de.evenos-consulting.asterisk.manualnumber";
+	public static final String CALLPOPUP_ONLY_TRANSFER_PARTNER_LABEL = "de.evenos-consulting.asterisk.onlytransferpartner";
+	public static final String CALLPOPUP_DYNAMIC_MEET_ME_LABEL = "de.evenos-consulting.asterisk.dynamicmeetme";
 	public static final String CALLPOPUP_CHANNELSTATE_PREFIX = "de.evenos-consulting.asterisk.channelstate.";
 
 	private Label lblTime = new Label();
@@ -61,9 +64,14 @@ public class CallPopup extends Window implements EventListener<Event> {
 
 	private ConfirmPanel confirmPanel = new ConfirmPanel(true);
 
-	private Checkbox chkManualNumber = new Checkbox("Enter Number"); // TODO: I18n
+	private Checkbox chkManualNumber = new Checkbox(Msg.getMsg(Env.getLanguage(Env.getCtx()), CALLPOPUP_MANUAL_NUMBER_LABEL));
 	private Textbox txtManualNumber = new Textbox();
 	private Combobox cbChoseNumber = new Combobox();
+
+	private Checkbox chkOnlyTransferPartner = new Checkbox(Msg.getMsg(Env.getLanguage(Env.getCtx()), CALLPOPUP_ONLY_TRANSFER_PARTNER_LABEL));
+	private Checkbox chkDynamicMeetMe = new Checkbox(Msg.getMsg(Env.getLanguage(Env.getCtx()), CALLPOPUP_DYNAMIC_MEET_ME_LABEL));
+	private Combobox cbMeetMeRooms = new Combobox();
+	private Textbox txtMeetMeRoom = new Textbox();
 
 	private Vbox layout = new Vbox(); // contains everything, transfer and conference divs are not visible until talking
 	private Hbox header = new Hbox(); // contains labels and buttons
@@ -73,6 +81,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 	private Div divConference = new Div();// contains buttons and stuff for meet me
 
 	private boolean initialized;
+	private boolean isMeetMeAvailable;
 	private boolean inTransfer;
 	private boolean inConference;
 
@@ -95,6 +104,9 @@ public class CallPopup extends Window implements EventListener<Event> {
 		if (titlePrefix.equals(CALLPOPUP_TITLE_LABEL))
 			titlePrefix = "Call: ";
 		setCallPopupTitle(channel.getCallerId().getName() != null ? channel.getCallerId().getName() : channel.getCallerId().getNumber());
+
+		Object ctxMeetMe = Env.getCtx().get("#Asterisk_MeetMe_Enabled");
+		isMeetMeAvailable = ctxMeetMe != null && Boolean.valueOf(ctxMeetMe.toString());
 
 		initComponents();
 		appendToDesktop(desktop);
@@ -130,14 +142,17 @@ public class CallPopup extends Window implements EventListener<Event> {
 
 			this.appendChild(layout);
 			layout.appendChild(header);
-
-			confirmPanel.addActionListener(Events.ON_CLICK, this);
-
+			
 			initLabels();
 			initButtons();
 			initTransferPanel();
 			initConferencePanel();
 
+			confirmPanel.addActionListener(Events.ON_CLICK, this);
+			confirmPanel.setVisible(false);
+			layout.appendChild(confirmPanel);
+			
+			
 			addEventListener("onFocus", this);
 			setPosition("center,center");
 			setBorder(true);
@@ -145,10 +160,6 @@ public class CallPopup extends Window implements EventListener<Event> {
 			doOverlapped();
 			setClosable(true);
 		}
-	}
-
-	private void initConferencePanel() {
-
 	}
 
 	private void initLabels() {
@@ -197,12 +208,13 @@ public class CallPopup extends Window implements EventListener<Event> {
 		btnTransfer.setEnabled(false);
 		divTransConfBtns.appendChild(btnTransfer);
 
-		// TODO: don't add conference if meet me is not available!
-		btnConference.setImage("/theme/default/images/conferenceCall16.png");
-		btnConference.addEventListener(Events.ON_CLICK, this);
-		btnConference.setEnabled(false);
-		divTransConfBtns.appendChild(btnConference);
-
+		// Don't add conference if meet me is not available!
+		if (isMeetMeAvailable) {
+			btnConference.setImage("/theme/default/images/conferenceCall16.png");
+			btnConference.addEventListener(Events.ON_CLICK, this);
+			btnConference.setEnabled(false);
+			divTransConfBtns.appendChild(btnConference);
+		}
 	}
 
 	private void initTransferPanel() {
@@ -227,7 +239,45 @@ public class CallPopup extends Window implements EventListener<Event> {
 		box.appendChild(txtManualNumber);
 		box.appendChild(cbChoseNumber);
 		divTransfer.appendChild(box);
-		divTransfer.appendChild(confirmPanel);
+	}
+
+	private void initConferencePanel() {
+		layout.appendChild(divConference);
+		divConference.setVisible(false);
+
+		Vbox container = new Vbox();
+		divConference.appendChild(container);
+		Hbox chkBoxes = new Hbox();
+		chkBoxes.appendChild(chkOnlyTransferPartner);
+
+		cbMeetMeRooms.setVisible(false);
+		/*
+		 * Commented out because my asterisk server is not able to show me a list of inactive meet me rooms which result in an emtpy list
+		chkBoxes.appendChild(chkDynamicMeetMe);
+		loadMeetMeRooms(cbMeetMeRooms);
+
+		chkDynamicMeetMe.setChecked(true);
+		chkDynamicMeetMe.addEventListener(Events.ON_CLICK, new EventListener<Event>() {
+			@Override
+			public void onEvent(Event event) throws Exception {
+				txtMeetMeRoom.setVisible(!txtMeetMeRoom.isVisible());
+				cbMeetMeRooms.setVisible(!cbMeetMeRooms.isVisible());
+			}
+		});
+		 */
+
+		container.appendChild(chkBoxes);
+		container.appendChild(cbMeetMeRooms);
+		container.appendChild(txtMeetMeRoom);
+	}
+
+	private void loadMeetMeRooms(Combobox checkBox) {
+		if(channel == null)	return;
+				
+		for(MeetMeRoom room : channel.getServer().getMeetMeRooms()){
+			Comboitem item = checkBox.appendItem(room.getRoomNumber());
+			item.setValue(room.getRoomNumber());
+		}
 	}
 
 	private void loadPhoneNumbers(Combobox comboBox) {
@@ -324,28 +374,81 @@ public class CallPopup extends Window implements EventListener<Event> {
 			setTransConfDivEnabled(false);
 			setConferenceDivEnabled(true);
 		}
-		// Handle events from ConfirmPanel (either from transfer div or from conference div
+		// Handle events from confirm panels 
 		else if (event.getName().equals(Events.ON_CLICK) && event.getTarget().equals(confirmPanel.getButton(ConfirmPanel.A_OK))) {
-			if (inTransfer) {
+			if(inTransfer)
 				transferCall();
-			} else if (inConference) {
-				// TODO: ???
-			}
+			else if(inConference)
+				conferenceCall();			
 		} else if (event.getName().equals(Events.ON_CLICK) && event.getTarget().equals(confirmPanel.getButton(ConfirmPanel.A_CANCEL))) {
-			inTransfer = false;
-			inConference = false;
 			setTransConfDivEnabled(true);
-			setConferenceDivEnabled(false);
 			setTransferDivEnabled(false);
+			setConferenceDivEnabled(false);
 		}
 
+	}
+
+	private void conferenceCall() {
+	
+		//TODO: Implement static meet me. Problem here: asterisk doesn't provide a list of inactive rooms so we cannot show a list...
+		
+		
+		//Get Dynamic Meet Me Extension from System Configurator
+		String exten = MSysConfig.getValue(Asterisk.ASTERISK_MEET_ME_EXTEN);
+		
+		//Get Min/Max meetme room number form System Configurator
+		int min = MSysConfig.getIntValue(Asterisk.ASTERISK_MEET_ME_ROOM_MIN, -1);
+		int max = MSysConfig.getIntValue(Asterisk.ASTERISK_MEET_ME_ROOM_MAX, -1);
+		
+		if(min == -1 || max == -1){
+			FDialog.error(0, "de.evenos-consulting.asterisk.nomeetmeeminmax");
+			return;
+		}
+		
+		int number;
+		try{
+			number = Integer.parseInt(txtMeetMeRoom.getText());	
+		}catch(Exception e){
+			number = -1;
+		}
+				
+		//Validate entered room number
+		if(number > -1){
+			number = number < min ? min : number;
+			number = number > max ? max : number;
+			
+			String sipContext = MSysConfig.getValue(Asterisk.ASTERISK_SIP_CONTEXT, "", Env.getAD_Client_ID(Env.getCtx()),
+					Env.getAD_Org_ID(Env.getCtx()));
+
+			exten += number;
+			
+			//transfer to room (either partner only or both)
+			if(chkOnlyTransferPartner.isChecked()){
+				//Only transfer partner
+				
+				//TODO: refactor since also used in transferCall()
+				AsteriskChannel channelToTransfer = channel.getDialedChannel();
+				channelToTransfer = channelToTransfer == null ? channel.getDialingChannel() : channelToTransfer;
+				if (channelToTransfer == null) {
+					FDialog.error(0, "de.evenos-consulting.asterisk.nochannelfortransfer"); // should never be reached, maybe remove
+					return;
+				}
+				System.out.println("Redirecting partner to " + exten);
+				channelToTransfer.redirect(sipContext, exten, 1);
+			}else{
+				//transfer both
+				System.out.println("Redirecting both to " + exten);
+				channel.redirectBothLegs(sipContext, exten, 1);
+			}
+		}
+		
 	}
 
 	private void transferCall() {
 		AsteriskChannel channelToTransfer = channel.getDialedChannel();
 		channelToTransfer = channelToTransfer == null ? channel.getDialingChannel() : channelToTransfer;
 
-		String sipContext = MSysConfig.getValue("de.evenos-consulting.asterisk.sipcontext", "", Env.getAD_Client_ID(Env.getCtx()),
+		String sipContext = MSysConfig.getValue(Asterisk.ASTERISK_SIP_CONTEXT, "", Env.getAD_Client_ID(Env.getCtx()),
 				Env.getAD_Org_ID(Env.getCtx()));
 
 		if (channelToTransfer == null) {
@@ -354,7 +457,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 		}
 
 		String exten = null;
-		
+
 		if (chkManualNumber.isChecked() && !Util.isEmpty(txtManualNumber.getText(), true)) {
 			exten = txtManualNumber.getText();
 		} else if (!chkManualNumber.isChecked() && cbChoseNumber.getSelectedItem() != null) {
@@ -375,11 +478,13 @@ public class CallPopup extends Window implements EventListener<Event> {
 	private void setTransferDivEnabled(boolean b) {
 		inTransfer = b;
 		divTransfer.setVisible(b);
+		confirmPanel.setVisible(b);
 	}
 
 	private void setConferenceDivEnabled(boolean b) {
 		inConference = b;
 		divConference.setVisible(b);
+		confirmPanel.setVisible(b);
 	}
 
 	@Override

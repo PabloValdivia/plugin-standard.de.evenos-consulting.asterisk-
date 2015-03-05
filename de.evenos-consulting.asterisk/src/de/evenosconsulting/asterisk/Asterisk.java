@@ -35,7 +35,21 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 	private final static String ON_ASTERISK_CHANNEL_STATE_CHANGED = "onASTERISK_CHANNEL_STATE_CHANGED";
 	private final static String ON_ASTERISK_CHANNEL_CHANGED = "onASTERISK_CHANNEL_CHANGED";
 	private final static String ON_ASTERISK_CALLER_ID_CHANGED = "onASTERISK_CALLER_ID_CHANGED";
-
+	
+	public final static String ASTERISK_SIP_HOST = "de.evenos-consulting.asterisk.siphost";
+	public final static String ASTERISK_SIP_USER = "de.evenos-consulting.asterisk.sipuser";
+	public final static String ASTERISK_SIP_PASSWORD = "de.evenos-consulting.asterisk.sippassword";
+	public final static String ASTERISK_SIP_PORT = "de.evenos-consulting.asterisk.sipport";
+	public final static String ASTERISK_SIP_CONTEXT = "de.evenos-consulting.asterisk.sipcontext";
+	public final static String ASTERISK_PHONE_PREFIX = "de.evenos-consulting.asterisk.phoneprefix";
+	public final static String ASTERISK_MEET_ME_ROOM_MIN = "de.evenos-consulting.asterisk.meetme.min";
+	public final static String ASTERISK_MEET_ME_ROOM_MAX = "de.evenos-consulting.asterisk.meetme.max";
+	public final static String ASTERISK_MEET_ME_EXTEN = "de.evenos-consulting.asterisk.meetme.exten";
+	
+	
+	
+	
+	
 	private static Map<String, Asterisk> asterisks = new HashMap<String, Asterisk>();
 	private static CCache<Integer, MUser_Asterisk> users = new CCache<Integer, MUser_Asterisk>("MUser_Asterisk_Asterisk_Cache", 10);
 	private static CCache<Integer, MSession> sessions = new CCache<Integer, MSession>("MSession_Asterisk_Cache", 10);
@@ -61,13 +75,13 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 		this.desktop = desktop;
 		if (server == null) {
 			try {
-				String siphost = MSysConfig.getValue("de.evenos-consulting.asterisk.siphost", "", Env.getAD_Client_ID(Env.getCtx()),
+				String siphost = MSysConfig.getValue(ASTERISK_SIP_HOST, "", Env.getAD_Client_ID(Env.getCtx()),
 						Env.getAD_Org_ID(Env.getCtx()));
-				String sipuser = MSysConfig.getValue("de.evenos-consulting.asterisk.sipuser", "", Env.getAD_Client_ID(Env.getCtx()),
+				String sipuser = MSysConfig.getValue(ASTERISK_SIP_USER, "", Env.getAD_Client_ID(Env.getCtx()),
 						Env.getAD_Org_ID(Env.getCtx()));
-				String sippassword = MSysConfig.getValue("de.evenos-consulting.asterisk.sippassword", "",
+				String sippassword = MSysConfig.getValue(ASTERISK_SIP_PASSWORD, "",
 						Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
-				int sipport = MSysConfig.getIntValue("de.evenos-consulting.asterisk.sipport", 0, Env.getAD_Client_ID(Env.getCtx()),
+				int sipport = MSysConfig.getIntValue(ASTERISK_SIP_PORT, 0, Env.getAD_Client_ID(Env.getCtx()),
 						Env.getAD_Org_ID(Env.getCtx()));
 
 				// Connect to the asterisk server
@@ -167,6 +181,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 
 	@Override
 	public void onNewAsteriskChannel(AsteriskChannel channel) {
+		log.severe("+++++++"+channel);
 		if (isAsteriskChannelOfInterest(channel)) {
 			log.finest("New AsteriskChannel of interest: " + channel);
 			channel.addPropertyChangeListener(this);
@@ -181,6 +196,11 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 
 	@Override
 	public void onNewMeetMeUser(MeetMeUser user) {
+//		System.out.println("User: " + user);
+//		System.out.println("Room: " + user.getRoom());
+		if(isAsteriskChannelOfInterest(user.getChannel())){
+			System.out.println("Ich bin im Meet Me");
+		}
 	}
 
 	@Override
@@ -196,7 +216,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			// Build a phone number which asterisk understands
 			String callableNumber = getCallableNumber(numberToCall);
 
-			String sipContext = MSysConfig.getValue("de.evenos-consulting.asterisk.sipcontext", "", Env.getAD_Client_ID(Env.getCtx()),
+			String sipContext = MSysConfig.getValue(ASTERISK_SIP_CONTEXT, "", Env.getAD_Client_ID(Env.getCtx()),
 					Env.getAD_Org_ID(Env.getCtx()));
 
 			int ad_session_id = Env.getContextAsInt(Env.getCtx(), "#AD_Session_ID");
@@ -212,7 +232,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			action.setContext(sipContext);
 			action.setPriority(1);
 			action.setTimeout(20000L);
-
+			
 			a.server.originateAsync(action, cb);
 		} catch (Exception e) {
 			classLog.warning("Asterisk.originate() faild: " + e);
@@ -222,7 +242,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 	public static String getCallableNumber(String numberToCall) {
 		String callableNumber = null;
 		if (!numberToCall.startsWith("SIP") && !numberToCall.startsWith("PJSIP")) {
-			String phonePrefix = MSysConfig.getValue("de.evenos-consulting.asterisk.phoneprefix", "", Env.getAD_Client_ID(Env.getCtx()),
+			String phonePrefix = MSysConfig.getValue(ASTERISK_PHONE_PREFIX, "", Env.getAD_Client_ID(Env.getCtx()),
 					Env.getAD_Org_ID(Env.getCtx()));
 			callableNumber = Util.isEmpty(phonePrefix, true) ? "" : phonePrefix;
 			callableNumber += numberToCall;
@@ -231,7 +251,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			// FIXME: Remove this and let Asterisk Server decide how to handle international numbers (only for testing)
 			callableNumber = callableNumber.replaceAll("[+]49", "0");
 
-			//TODO: Use SysConfig switch to determine if + should get replaced e.g. de.evenos-consulting.asterisk.replacepluswithzerozero
+			//TODO: Use SysConfig switch to determine if + should get replaced e.g. de.evenos-consulting.asterisk.replacepluswithdoublezero
 			callableNumber = callableNumber.replaceAll("[+]", "00"); 
 			callableNumber = callableNumber.replaceAll("[^\\d]", "");
 		} else {
@@ -311,7 +331,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-
+		log.severe("Property " + evt.getPropertyName() + " changed to " + evt.getNewValue());
 		log.finest("Property " + evt.getPropertyName() + " changed to " + evt.getNewValue());
 
 		final Desktop desktop = asterisks.get(getSession().getWebSession()).desktop;
