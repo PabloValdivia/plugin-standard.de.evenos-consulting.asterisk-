@@ -33,9 +33,6 @@ public class Asterisk implements EventListener<Event> {
 	public static final String ON_ASTERISK_CHANNEL_STATE_CHANGED = "onASTERISK_CHANNEL_STATE_CHANGED";
 	public static final String ON_ASTERISK_CHANNEL_CHANGED = "onASTERISK_CHANNEL_CHANGED";
 	public static final String ON_ASTERISK_CALLER_ID_CHANGED = "onASTERISK_CALLER_ID_CHANGED";
-	// public static final String ON_ASTERSK_MEET_ME_NEW_USER = "onASTERSK_MEET_ME_NEW_USER";
-	// public static final String ON_ASTERSK_MEET_ME_NEW_USER_OF_INTEREST = "onASTERSK_MEET_ME_NEW_USER_OF_INTEREST";
-	// public static final String ON_ASTERSK_MEET_ME_USER_LEFT = "onASTERSK_MEET_ME_USER_LEFT";
 	public static final String ON_ASTERSK_MEET_ME_CHANGE = "onASTERSK_MEET_ME_CHANGE";
 
 	public static final String ASTERISK_SIP_HOST = "de.evenos-consulting.asterisk.siphost";
@@ -45,7 +42,6 @@ public class Asterisk implements EventListener<Event> {
 	public static final String ASTERISK_SIP_CONTEXT = "de.evenos-consulting.asterisk.sipcontext";
 	public static final String ASTERISK_SIP_TYPE = "de.evenos-conuslting.asterisk.siptype"; // SIP or PJSIP
 	public static final String ASTERISK_PHONE_PREFIX = "de.evenos-consulting.asterisk.phoneprefix";
-
 	public static final String ASTERISK_MEET_ME_ROOM_MIN = "de.evenos-consulting.asterisk.meetme.min";
 	public static final String ASTERISK_MEET_ME_ROOM_MAX = "de.evenos-consulting.asterisk.meetme.max";
 	public static final String ASTERISK_MEET_ME_EXTEN = "de.evenos-consulting.asterisk.meetme.exten";
@@ -220,7 +216,7 @@ public class Asterisk implements EventListener<Event> {
 
 	public static String getCallableNumber(String numberToCall) {
 		String callableNumber = null;
-		if (!numberToCall.startsWith("SIP") && !numberToCall.startsWith("PJSIP")) {
+		if (!numberToCall.startsWith(MSysConfig.getValue(ASTERISK_SIP_TYPE, "SIP") + "/")) {
 			String phonePrefix = MSysConfig.getValue(ASTERISK_PHONE_PREFIX, "", Env.getAD_Client_ID(Env.getCtx()),
 					Env.getAD_Org_ID(Env.getCtx()));
 			callableNumber = Util.isEmpty(phonePrefix, true) ? "" : phonePrefix;
@@ -235,8 +231,9 @@ public class Asterisk implements EventListener<Event> {
 		} else {
 			// Calling internal phones where SIP line equals the asterisk extension for internal calls, e. g. Phone2="SIP/50" then
 			// extension 50 is called. Would also work with e. g. "SIP/John" and asterisk extension "John"
-			if (numberToCall.indexOf("/") > -1)
-				callableNumber = numberToCall.substring(numberToCall.indexOf("/") + 1);
+			int index = numberToCall.indexOf("/");
+			if (index > -1)
+				callableNumber = numberToCall.substring(index + 1);
 		}
 		return callableNumber;
 	}
