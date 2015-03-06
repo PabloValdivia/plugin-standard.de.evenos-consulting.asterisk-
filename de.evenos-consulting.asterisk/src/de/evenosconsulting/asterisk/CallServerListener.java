@@ -8,6 +8,7 @@ import org.asteriskjava.live.AsteriskQueueEntry;
 import org.asteriskjava.live.AsteriskServerListener;
 import org.asteriskjava.live.ChannelState;
 import org.asteriskjava.live.MeetMeUser;
+import org.asteriskjava.live.MeetMeUserState;
 import org.asteriskjava.live.internal.AsteriskAgentImpl;
 import org.compiere.util.CLogger;
 import org.zkoss.zk.ui.Executions;
@@ -46,11 +47,9 @@ public class CallServerListener implements AsteriskServerListener, PropertyChang
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		log.finest("Property " + evt.getPropertyName() + " changed to " + evt.getNewValue());
-
 		// For each state change of the channel we need to display the popup and/or change its state and time but
 		// we only can manipulate UI components in onEvent() so here we just fire some events and handle them in onEvent()
-		if (evt.getPropertyName().equals("state") && evt.getNewValue() instanceof ChannelState
-				&& evt.getSource() instanceof AsteriskChannel) {
+		if (evt.getPropertyName().equals("state") && evt.getNewValue() instanceof ChannelState) {
 			AsteriskChannel channel = (AsteriskChannel) evt.getSource();
 			ChannelState state = (ChannelState) evt.getNewValue();
 			Executions.schedule(CallServerListener.this.asterisk.getDesktop(), CallServerListener.this.asterisk, new Event(
@@ -62,17 +61,15 @@ public class CallServerListener implements AsteriskServerListener, PropertyChang
 
 		// When we make a Call, we first register to the channel Asterisk-Server->Own Phone. As soon as the own phone is picked up,
 		// we are interested in the channel Own Phone -> Destination Number. So here we simply switch the channels we are listening on
-		if (evt.getPropertyName().equals("dialedChannel")) {
-			if (evt.getSource() instanceof AsteriskChannel && evt.getNewValue() instanceof AsteriskChannel) {
-				AsteriskChannel dialingChannel = (AsteriskChannel) evt.getSource();
-				AsteriskChannel dialedChannel = (AsteriskChannel) evt.getNewValue();
+		if (evt.getPropertyName().equals("dialedChannel") & evt.getNewValue() instanceof AsteriskChannel) {
+			AsteriskChannel dialingChannel = (AsteriskChannel) evt.getSource();
+			AsteriskChannel dialedChannel = (AsteriskChannel) evt.getNewValue();
 
-				if (dialingChannel.getDialedChannel().equals(dialedChannel)) {
-					dialingChannel.removePropertyChangeListener(this);
-					dialedChannel.addPropertyChangeListener(this);
-					Executions.schedule(CallServerListener.this.asterisk.getDesktop(), CallServerListener.this.asterisk, new Event(
-							Asterisk.ON_ASTERISK_CHANNEL_CHANGED, null, new AsteriskChannelSwitch(dialingChannel, dialedChannel)));
-				}
+			if (dialingChannel.getDialedChannel().equals(dialedChannel)) {
+				dialingChannel.removePropertyChangeListener(this);
+				dialedChannel.addPropertyChangeListener(this);
+				Executions.schedule(CallServerListener.this.asterisk.getDesktop(), CallServerListener.this.asterisk, new Event(
+						Asterisk.ON_ASTERISK_CHANNEL_CHANGED, null, new AsteriskChannelSwitch(dialingChannel, dialedChannel)));
 			}
 		}
 
@@ -82,15 +79,13 @@ public class CallServerListener implements AsteriskServerListener, PropertyChang
 		// so all we have to do to identify the (extern) caller is to listen to the "dialingChannel" property of the Server->Own Phone
 		// channel. But if we make a call to an external number this event gets also fired. Thats why we check if we have a asterisk channel
 		// of interes (own channel) and only then update the caller id.
-		if (evt.getPropertyName().equals("dialingChannel")) {
-			if (evt.getSource() instanceof AsteriskChannel && evt.getNewValue() instanceof AsteriskChannel) {
-				AsteriskChannel dialedChannel = (AsteriskChannel) evt.getSource();
-				AsteriskChannel dialingChannel = (AsteriskChannel) evt.getNewValue(); // Here we have the caller id
-				if (asterisk.isAsteriskChannelOfInterest(dialedChannel))
-					Executions.schedule(CallServerListener.this.asterisk.getDesktop(), CallServerListener.this.asterisk, new Event(
-							Asterisk.ON_ASTERISK_CALLER_ID_CHANGED, null, new AsteriskChannelSwitch(dialedChannel, dialingChannel)));
-			}
-		}
+		if (evt.getPropertyName().equals("dialingChannel") && evt.getNewValue() instanceof AsteriskChannel) {
+			AsteriskChannel dialedChannel = (AsteriskChannel) evt.getSource();
+			AsteriskChannel dialingChannel = (AsteriskChannel) evt.getNewValue(); // Here we have the caller id
+			if (asterisk.isAsteriskChannelOfInterest(dialedChannel))
+				Executions.schedule(CallServerListener.this.asterisk.getDesktop(), CallServerListener.this.asterisk, new Event(
+						Asterisk.ON_ASTERISK_CALLER_ID_CHANGED, null, new AsteriskChannelSwitch(dialedChannel, dialingChannel)));
 
+		}
 	}
 }

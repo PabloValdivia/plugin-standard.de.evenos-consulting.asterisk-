@@ -99,11 +99,13 @@ public class CallPopup extends Window implements EventListener<Event> {
 		this.desktop = desktop;
 		this.channel = channel;
 
-		// TODO: Chose a better Title. Maybe use system message and allow variables like @CallerId.Name@ and @CallerId.Number@ 
+		// TODO: Chose a better Title. Maybe use system message and allow variables like @CallerId.Name@ and @CallerId.Number@
 		titlePrefix = Msg.getMsg(Env.getLanguage(Env.getCtx()), CALLPOPUP_TITLE_LABEL);
 		if (titlePrefix.equals(CALLPOPUP_TITLE_LABEL))
-			titlePrefix = "Call: ";
-		setCallPopupTitle(channel.getCallerId().getName() != null ? channel.getCallerId().getName() : channel.getCallerId().getNumber());
+			titlePrefix = "Call:";
+		titlePrefix += " ";
+
+		setCallPopupTitle();
 
 		Object ctxMeetMe = Env.getCtx().get("#Asterisk_MeetMe_Enabled");
 		isMeetMeAvailable = ctxMeetMe != null && Boolean.valueOf(ctxMeetMe.toString());
@@ -141,7 +143,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 
 			this.appendChild(layout);
 			layout.appendChild(header);
-			
+
 			initLabels();
 			initButtons();
 			initTransferPanel();
@@ -150,8 +152,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 			confirmPanel.addActionListener(Events.ON_CLICK, this);
 			confirmPanel.setVisible(false);
 			layout.appendChild(confirmPanel);
-			
-			
+
 			addEventListener("onFocus", this);
 			setPosition("center,center");
 			setBorder(true);
@@ -252,17 +253,12 @@ public class CallPopup extends Window implements EventListener<Event> {
 		cbMeetMeRooms.setVisible(false);
 		/*
 		 * Commented out because my asterisk server is not able to show me a list of inactive meet me rooms which results in an empty list
-		chkBoxes.appendChild(chkDynamicMeetMe);
-		loadMeetMeRooms(cbMeetMeRooms);
-
-		chkDynamicMeetMe.setChecked(true);
-		chkDynamicMeetMe.addEventListener(Events.ON_CLICK, new EventListener<Event>() {
-			@Override
-			public void onEvent(Event event) throws Exception {
-				txtMeetMeRoom.setVisible(!txtMeetMeRoom.isVisible());
-				cbMeetMeRooms.setVisible(!cbMeetMeRooms.isVisible());
-			}
-		});
+		 * chkBoxes.appendChild(chkDynamicMeetMe); loadMeetMeRooms(cbMeetMeRooms);
+		 * 
+		 * chkDynamicMeetMe.setChecked(true); chkDynamicMeetMe.addEventListener(Events.ON_CLICK, new EventListener<Event>() {
+		 * 
+		 * @Override public void onEvent(Event event) throws Exception { txtMeetMeRoom.setVisible(!txtMeetMeRoom.isVisible());
+		 * cbMeetMeRooms.setVisible(!cbMeetMeRooms.isVisible()); } });
 		 */
 
 		container.appendChild(chkBoxes);
@@ -318,10 +314,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 		}
 		// Update title label
 		else if (event.getName().equals(ON_CALLPOPUP_UPDATE_TITLE_EVENT)) {
-			if (event.getData() instanceof String) {
-				String title = (String) event.getData();
-				setCallPopupTitle(title);
-			}
+			setCallPopupTitle();
 		}
 		// Update status label
 		else if (event.getName().equals(ON_CALLPOPUP_UPDATE_STATUS_EVENT)) {
@@ -364,12 +357,12 @@ public class CallPopup extends Window implements EventListener<Event> {
 			setTransConfDivEnabled(false);
 			setConferenceDivEnabled(true);
 		}
-		// Handle events from confirm panels 
+		// Handle events from confirm panels
 		else if (event.getName().equals(Events.ON_CLICK) && event.getTarget().equals(confirmPanel.getButton(ConfirmPanel.A_OK))) {
-			if(inTransfer)
+			if (inTransfer)
 				transferCall();
-			else if(inConference)
-				conferenceCall();			
+			else if (inConference)
+				conferenceCall();
 		} else if (event.getName().equals(Events.ON_CLICK) && event.getTarget().equals(confirmPanel.getButton(ConfirmPanel.A_CANCEL))) {
 			setTransConfDivEnabled(true);
 			setTransferDivEnabled(false);
@@ -379,59 +372,58 @@ public class CallPopup extends Window implements EventListener<Event> {
 	}
 
 	private void conferenceCall() {
-	
-		//TODO: Implement static meet me. Problem here: asterisk doesn't provide a list of inactive rooms so we cannot show a list...
+
+		// TODO: Implement static meet me. Problem here: asterisk doesn't provide a list of inactive rooms so we cannot show a list...
 		// maybe read the extension.conf and search for meetme with regex and cache the rooms in static cache
-		
-		//Get Dynamic Meet Me Extension from System Configurator
+
+		// Get Dynamic Meet Me Extension from System Configurator
 		String exten = MSysConfig.getValue(Asterisk.ASTERISK_MEET_ME_EXTEN);
-		
-		//Get Min/Max meetme room number form System Configurator
+
+		// Get Min/Max meetme room number form System Configurator
 		int min = MSysConfig.getIntValue(Asterisk.ASTERISK_MEET_ME_ROOM_MIN, -1);
 		int max = MSysConfig.getIntValue(Asterisk.ASTERISK_MEET_ME_ROOM_MAX, -1);
-		
-		if(min == -1 || max == -1){
+
+		if (min == -1 || max == -1) {
 			FDialog.error(0, "de.evenos-consulting.asterisk.nomeetmeeminmax");
 			return;
 		}
-		
+
 		int number;
-		try{
-			number = Integer.parseInt(txtMeetMeRoom.getText());	
-		}catch(Exception e){
+		try {
+			number = Integer.parseInt(txtMeetMeRoom.getText());
+		} catch (Exception e) {
 			number = -1;
 		}
-				
-		//Validate entered room number
-		if(number > -1){
+
+		// Validate entered room number
+		if (number > -1) {
 			number = number < min ? min : number;
 			number = number > max ? max : number;
-			
+
 			String sipContext = MSysConfig.getValue(Asterisk.ASTERISK_SIP_CONTEXT, "", Env.getAD_Client_ID(Env.getCtx()),
 					Env.getAD_Org_ID(Env.getCtx()));
 
 			exten += number;
-			
-			//transfer to room (either partner only or both)
-			if(chkOnlyTransferPartner.isChecked()){
-				//Only transfer partner
-				
-				//TODO: refactor since also used in transferCall()
+
+			// transfer to room (either partner only or both)
+			if (chkOnlyTransferPartner.isChecked()) {
+				// Only transfer partner
+
+				// TODO: refactor since also used in transferCall()
 				AsteriskChannel channelToTransfer = channel.getDialedChannel();
 				channelToTransfer = channelToTransfer == null ? channel.getDialingChannel() : channelToTransfer;
 				if (channelToTransfer == null) {
 					FDialog.error(0, "de.evenos-consulting.asterisk.nochannelfortransfer"); // should never be reached, maybe remove
 					return;
-				}//TODO: refactor since also used in transferCall()
-				
-				
+				}// TODO: refactor since also used in transferCall()
+
 				channelToTransfer.redirect(sipContext, exten, 1);
-			}else{
-				//transfer both
+			} else {
+				// transfer both
 				channel.redirectBothLegs(sipContext, exten, 1);
 			}
 		}
-		
+
 	}
 
 	private void transferCall() {
@@ -494,7 +486,28 @@ public class CallPopup extends Window implements EventListener<Event> {
 		desktop = null;
 	}
 
-	public void setCallPopupTitle(String title) {
+	public void setCallPopupTitle() {
+		if (channel == null) {
+			setTitle("<>");
+			return;
+		}
+
+		AsteriskChannel partner = channel.getDialedChannel();
+		if (partner == null)
+			partner = channel.getDialingChannel();
+		if (partner == null)
+			partner = channel;
+
+		String title = null;
+		if (channel.getMeetMeUser() != null && channel.getMeetMeUser().getRoom() != null)
+			title = "Meet Me Room (" + channel.getMeetMeUser().getRoom().getRoomNumber() + ")";
+		if (title == null && partner.getCallerId() != null)
+			title = partner.getCallerId().getName();
+		if (title == null && partner.getCallerId() != null)
+			title = partner.getCallerId().getNumber();
+		if (partner.getCallerId() != null && title.equals(partner.getCallerId().getName()))
+			title += " (" + partner.getCallerId().getNumber() + ")";
+
 		setTitle(titlePrefix + title);
 	}
 }

@@ -7,6 +7,7 @@ import java.util.Timer;
 import org.adempiere.webui.component.Window;
 import org.adempiere.webui.panel.HeaderPanel;
 import org.asteriskjava.live.MeetMeUser;
+import org.compiere.util.Env;
 import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -60,7 +61,7 @@ public class MeetMePopup extends Window implements EventListener<Event> {
 
 	private void populateUsers() {
 
-		//TODO: Improve layout. Maybe use table with custom table model
+		// TODO: Improve layout. Maybe use table with custom table model
 		this.removeChild(layout);
 		layout = new Vbox();
 		this.appendChild(layout);
@@ -87,8 +88,16 @@ public class MeetMePopup extends Window implements EventListener<Event> {
 				btnUsrs.put(kick, user);
 				b.appendChild(kick);
 
-				Label name = new Label(user.getChannel().getCallerId().getName() + " " + user.getChannel().getCallerId().getNumber());
-				b.appendChild(name);
+				String name = user.getChannel().getCallerId().getName();
+				if (name == null)
+					name = user.getChannel().getName().substring(0, user.getChannel().getName().indexOf("-"));
+
+				if(this.user.equals(user))
+					name = Env.getContext(Env.getCtx(), "#AD_User_Name");
+					
+				
+				Label lblName = new Label(name + " (" + user.getChannel().getCallerId().getNumber() + ")");
+				b.appendChild(lblName);
 			}
 		}
 	}
@@ -113,10 +122,10 @@ public class MeetMePopup extends Window implements EventListener<Event> {
 				if (user != null) {
 					if (user.isMuted()) {
 						user.unmute();
-						button.setLabel("Mute"); //TODO: I18n
+						button.setLabel("Mute"); // TODO: I18n
 					} else {
 						user.mute();
-						button.setLabel("Unmute");//TODO: I18n
+						button.setLabel("Unmute");// TODO: I18n
 					}
 				}
 			} else {
