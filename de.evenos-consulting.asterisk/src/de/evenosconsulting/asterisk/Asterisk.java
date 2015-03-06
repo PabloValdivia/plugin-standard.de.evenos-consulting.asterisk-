@@ -1,20 +1,17 @@
 package de.evenosconsulting.asterisk;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.asteriskjava.live.AsteriskChannel;
-import org.asteriskjava.live.AsteriskQueueEntry;
 import org.asteriskjava.live.AsteriskServer;
 import org.asteriskjava.live.AsteriskServerListener;
 import org.asteriskjava.live.ChannelState;
 import org.asteriskjava.live.DefaultAsteriskServer;
 import org.asteriskjava.live.ManagerCommunicationException;
 import org.asteriskjava.live.MeetMeUser;
+import org.asteriskjava.live.MeetMeUserState;
 import org.asteriskjava.live.OriginateCallback;
-import org.asteriskjava.live.internal.AsteriskAgentImpl;
 import org.asteriskjava.manager.action.OriginateAction;
 import org.compiere.model.MSession;
 import org.compiere.model.MSysConfig;
@@ -29,45 +26,47 @@ import org.zkoss.zk.ui.event.EventListener;
 
 import de.evenosconsulting.model.MUser_Asterisk;
 import de.evenosconsulting.window.CallPopup;
+import de.evenosconsulting.window.MeetMePopup;
 
-public class Asterisk implements AsteriskServerListener, EventListener<Event>, PropertyChangeListener {
+public class Asterisk implements EventListener<Event> {
 
-	private final static String ON_ASTERISK_CHANNEL_STATE_CHANGED = "onASTERISK_CHANNEL_STATE_CHANGED";
-	private final static String ON_ASTERISK_CHANNEL_CHANGED = "onASTERISK_CHANNEL_CHANGED";
-	private final static String ON_ASTERISK_CALLER_ID_CHANGED = "onASTERISK_CALLER_ID_CHANGED";
-	
-	public final static String ASTERISK_SIP_HOST = "de.evenos-consulting.asterisk.siphost";
-	public final static String ASTERISK_SIP_USER = "de.evenos-consulting.asterisk.sipuser";
-	public final static String ASTERISK_SIP_PASSWORD = "de.evenos-consulting.asterisk.sippassword";
-	public final static String ASTERISK_SIP_PORT = "de.evenos-consulting.asterisk.sipport";
-	public final static String ASTERISK_SIP_CONTEXT = "de.evenos-consulting.asterisk.sipcontext";
-	public final static String ASTERISK_PHONE_PREFIX = "de.evenos-consulting.asterisk.phoneprefix";
-	public final static String ASTERISK_MEET_ME_ROOM_MIN = "de.evenos-consulting.asterisk.meetme.min";
-	public final static String ASTERISK_MEET_ME_ROOM_MAX = "de.evenos-consulting.asterisk.meetme.max";
-	public final static String ASTERISK_MEET_ME_EXTEN = "de.evenos-consulting.asterisk.meetme.exten";
-	
-	
-	
-	
-	
+	public static final String ON_ASTERISK_CHANNEL_STATE_CHANGED = "onASTERISK_CHANNEL_STATE_CHANGED";
+	public static final String ON_ASTERISK_CHANNEL_CHANGED = "onASTERISK_CHANNEL_CHANGED";
+	public static final String ON_ASTERISK_CALLER_ID_CHANGED = "onASTERISK_CALLER_ID_CHANGED";
+	public static final String ON_ASTERSK_MEET_ME_NEW_USER = "onASTERSK_MEET_ME_NEW_USER";
+	public static final String ON_ASTERSK_MEET_ME_NEW_USER_OF_INTEREST = "onASTERSK_MEET_ME_NEW_USER_OF_INTEREST";
+	public static final String ON_ASTERSK_MEET_ME_USER_LEFT = "onASTERSK_MEET_ME_USER_LEFT";
+
+	public static final String ASTERISK_SIP_HOST = "de.evenos-consulting.asterisk.siphost";
+	public static final String ASTERISK_SIP_USER = "de.evenos-consulting.asterisk.sipuser";
+	public static final String ASTERISK_SIP_PASSWORD = "de.evenos-consulting.asterisk.sippassword";
+	public static final String ASTERISK_SIP_PORT = "de.evenos-consulting.asterisk.sipport";
+	public static final String ASTERISK_SIP_CONTEXT = "de.evenos-consulting.asterisk.sipcontext";
+	public static final String ASTERISK_PHONE_PREFIX = "de.evenos-consulting.asterisk.phoneprefix";
+
+	public static final String ASTERISK_SIP_TYPE = "de.evenos-conuslting.asterisk.siptype"; // SIP or PJSIP
+	public static final String ASTERISK_MEET_ME_ROOM_MIN = "de.evenos-consulting.asterisk.meetme.min";
+	public static final String ASTERISK_MEET_ME_ROOM_MAX = "de.evenos-consulting.asterisk.meetme.max";
+	public static final String ASTERISK_MEET_ME_EXTEN = "de.evenos-consulting.asterisk.meetme.exten";
+
 	private static Map<String, Asterisk> asterisks = new HashMap<String, Asterisk>();
 	private static CCache<Integer, MUser_Asterisk> users = new CCache<Integer, MUser_Asterisk>("MUser_Asterisk_Asterisk_Cache", 10);
 	private static CCache<Integer, MSession> sessions = new CCache<Integer, MSession>("MSession_Asterisk_Cache", 10);
 
 	private AsteriskServer server;
+	private AsteriskServerListener callListener = new CallServerListener(this);
+	private AsteriskServerListener meetMeListener = new MeetMeServerListener(this);
+
 	private Desktop desktop;
-	private Map<AsteriskChannel, CallPopup> popups = new HashMap<AsteriskChannel, CallPopup>();
+
+	private Map<AsteriskChannel, CallPopup> callPopups = new HashMap<AsteriskChannel, CallPopup>();
+	private Map<MeetMeUser, MeetMePopup> meetMePopups = new HashMap<MeetMeUser, MeetMePopup>();
+
 	private CLogger log = CLogger.getCLogger(Asterisk.class);
 	private static CLogger classLog = CLogger.getCLogger(Asterisk.class);
 
-	private class AsteriskChannelSwitch {
-		AsteriskChannel oldChannel;
-		AsteriskChannel newChannel;
-
-		public AsteriskChannelSwitch(AsteriskChannel oldChannel, AsteriskChannel newChannel) {
-			this.oldChannel = oldChannel;
-			this.newChannel = newChannel;
-		}
+	public Desktop getDesktop() {
+		return desktop;
 	}
 
 	public Asterisk(Desktop desktop) {
@@ -79,14 +78,16 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 						Env.getAD_Org_ID(Env.getCtx()));
 				String sipuser = MSysConfig.getValue(ASTERISK_SIP_USER, "", Env.getAD_Client_ID(Env.getCtx()),
 						Env.getAD_Org_ID(Env.getCtx()));
-				String sippassword = MSysConfig.getValue(ASTERISK_SIP_PASSWORD, "",
-						Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
+				String sippassword = MSysConfig.getValue(ASTERISK_SIP_PASSWORD, "", Env.getAD_Client_ID(Env.getCtx()),
+						Env.getAD_Org_ID(Env.getCtx()));
 				int sipport = MSysConfig.getIntValue(ASTERISK_SIP_PORT, 0, Env.getAD_Client_ID(Env.getCtx()),
 						Env.getAD_Org_ID(Env.getCtx()));
 
 				// Connect to the asterisk server
 				server = new DefaultAsteriskServer(siphost, sipport, sipuser, sippassword);
-				server.addAsteriskServerListener(this);
+				server.addAsteriskServerListener(callListener);
+				server.addAsteriskServerListener(meetMeListener);
+
 				Env.getCtx().put("#Asterisk_Connected", true);
 				log.info("Successfully connected to Asterisk Server");
 
@@ -127,11 +128,12 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 
 	public void stop() {
 		log.finest("Stopping Asterisk: " + this);
-		for (CallPopup popup : popups.values())
+		for (CallPopup popup : callPopups.values())
 			popup.dispose();
 
 		if (server != null) {
-			server.removeAsteriskServerListener(this);
+			server.removeAsteriskServerListener(callListener);
+			server.removeAsteriskServerListener(meetMeListener);
 			server.shutdown();
 			server = null;
 		}
@@ -179,36 +181,10 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 		return session;
 	}
 
-	@Override
-	public void onNewAsteriskChannel(AsteriskChannel channel) {
-		log.severe("+++++++"+channel);
-		if (isAsteriskChannelOfInterest(channel)) {
-			log.finest("New AsteriskChannel of interest: " + channel);
-			channel.addPropertyChangeListener(this);
-		}
-	}
-
-	private boolean isAsteriskChannelOfInterest(AsteriskChannel channel) {
+	public boolean isAsteriskChannelOfInterest(AsteriskChannel channel) {
 		MSession session = getSession();
 		String sipchannel = getSIPChannelForCurrentUser(session);
 		return channel.getName().startsWith(sipchannel);
-	}
-
-	@Override
-	public void onNewMeetMeUser(MeetMeUser user) {
-//		System.out.println("User: " + user);
-//		System.out.println("Room: " + user.getRoom());
-		if(isAsteriskChannelOfInterest(user.getChannel())){
-			System.out.println("Ich bin im Meet Me");
-		}
-	}
-
-	@Override
-	public void onNewAgent(AsteriskAgentImpl agent) {
-	}
-
-	@Override
-	public void onNewQueueEntry(AsteriskQueueEntry entry) {
 	}
 
 	public static void originateAsync(String numberToCall, OriginateCallback cb) {
@@ -232,7 +208,7 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			action.setContext(sipContext);
 			action.setPriority(1);
 			action.setTimeout(20000L);
-			
+
 			a.server.originateAsync(action, cb);
 		} catch (Exception e) {
 			classLog.warning("Asterisk.originate() faild: " + e);
@@ -247,12 +223,11 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 			callableNumber = Util.isEmpty(phonePrefix, true) ? "" : phonePrefix;
 			callableNumber += numberToCall;
 
-			
 			// FIXME: Remove this and let Asterisk Server decide how to handle international numbers (only for testing)
 			callableNumber = callableNumber.replaceAll("[+]49", "0");
 
-			//TODO: Use SysConfig switch to determine if + should get replaced e.g. de.evenos-consulting.asterisk.replacepluswithdoublezero
-			callableNumber = callableNumber.replaceAll("[+]", "00"); 
+			// TODO: Use SysConfig switch to determine if + should get replaced e.g. de.evenos-consulting.asterisk.replacepluswithdoublezero
+			callableNumber = callableNumber.replaceAll("[+]", "00");
 			callableNumber = callableNumber.replaceAll("[^\\d]", "");
 		} else {
 			// Calling internal phones where SIP line equals the asterisk extension for internal calls, e. g. Phone2="SIP/50" then
@@ -269,116 +244,127 @@ public class Asterisk implements AsteriskServerListener, EventListener<Event>, P
 		if (evt.getName().equals(ON_ASTERISK_CHANNEL_CHANGED)) {
 			if (evt.getData() instanceof AsteriskChannelSwitch) {
 				AsteriskChannelSwitch acswitch = (AsteriskChannelSwitch) evt.getData();
-				CallPopup popup = popups.get(acswitch.oldChannel);
+				CallPopup popup = callPopups.get(acswitch.oldChannel);
 				if (popup != null) {
-					// popup.setAsteriskChannel(acswitch.newChannel);
-					popups.remove(acswitch.oldChannel);
-					popups.put(acswitch.newChannel, popup);
+					callPopups.remove(acswitch.oldChannel);
+					callPopups.put(acswitch.newChannel, popup);
 					String title = acswitch.newChannel.getCallerId().getNumber();
-					updatePopup(acswitch.newChannel, title);
+					updateCallPopup(acswitch.newChannel, title);
 				}
 			}
 		}
 
 		if (evt.getName().equals(ON_ASTERISK_CHANNEL_STATE_CHANGED)) {
-			updatePopup((AsteriskChannel) evt.getData(), null);
+			updateCallPopup((AsteriskChannel) evt.getData(), null);
 		}
 
 		if (evt.getName().equals(ON_ASTERISK_CALLER_ID_CHANGED)) {
 			if (evt.getData() instanceof AsteriskChannelSwitch) {
 				AsteriskChannelSwitch acswitch = (AsteriskChannelSwitch) evt.getData();
 				String title = acswitch.newChannel.getCallerId().getNumber();
-				updatePopup(acswitch.oldChannel, title);
+				updateCallPopup(acswitch.oldChannel, title);
+			}
+		}
+
+		if (evt.getName().equals(ON_ASTERSK_MEET_ME_NEW_USER_OF_INTEREST)) {
+			if (evt.getData() instanceof MeetMeUser) {
+				MeetMeUser user = (MeetMeUser) evt.getData();
+				updateMeetMePopup(user);
+			}
+		}
+		
+		if(evt.getName().equals(ON_ASTERSK_MEET_ME_NEW_USER)){
+			if (evt.getData() instanceof MeetMeUser) {
+				MeetMeUser user = (MeetMeUser) evt.getData();
+				if(meetMePopups.get(user) == null){
+					for(MeetMeUser usr : user.getRoom().getUsers()){
+						if(isAsteriskChannelOfInterest(usr.getChannel()))
+							updateMeetMePopup(usr);
+					}
+				}				
+			}
+		}
+		
+		if(evt.getName().equals(ON_ASTERSK_MEET_ME_USER_LEFT)){
+			if (evt.getData() instanceof MeetMeUser) {
+				MeetMeUser user = (MeetMeUser) evt.getData();
+				if(meetMePopups.get(user) == null){
+					for(MeetMeUser usr : user.getRoom().getUsers()){
+						if(isAsteriskChannelOfInterest(usr.getChannel()))
+							updateMeetMePopup(usr);
+					}
+				}else{
+					updateMeetMePopup(user);
+				}
 			}
 		}
 
 	}
+	
+	private MeetMePopup createMeetMePopup(MeetMeUser user) {
+		log.finest("Creating MeetMePopup for User: " + user);
+		MeetMePopup popup = meetMePopups.get(user);
+		if (popup == null) {
+			popup = new MeetMePopup(desktop, user);
+			meetMePopups.put(user, popup);
+		}
+		return popup;
+	}
 
-	private void removePopup(AsteriskChannel channel) {
-		log.finest("Removing CallPopup for Channel: " + channel);
-		CallPopup popup = popups.get(channel);
+	private void updateMeetMePopup(MeetMeUser user) {
+		log.finest("Updating MeetMePopup for User: " + user);
+		MeetMePopup popup = meetMePopups.get(user);
+		if (popup == null) {
+			popup = createMeetMePopup(user);
+		}
+
+		Executions.schedule(desktop, popup, new Event(MeetMePopup.ON_MEETMEPOPUP_UPDATE_EVENT));
+		
+		if (user.getChannel().getState().equals(ChannelState.HUNGUP) || user.getState().equals(MeetMeUserState.LEFT))
+			removeMeetMePopup(user);
+	}
+
+	private void removeMeetMePopup(MeetMeUser user) {
+		log.finest("Removing MeetMePopup for User: " + user);
+		MeetMePopup popup = meetMePopups.get(user);
 		if (popup != null) {
 			popup.dispose();
 			popup = null;
 		}
 	}
 
-	private void updatePopup(AsteriskChannel channel, String title) {
-		log.finest("Updating CallPopup for Channel: " + channel + " with Title: " + title);
-		CallPopup popup = popups.get(channel);
-		if (popup == null) {
-			popup = createPopup(channel);
-		}
-
-		if (title != null && title.length() > 0)
-			Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_UPDATE_TITLE_EVENT, null, title));
-
-		Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_UPDATE_STATUS_EVENT, null, channel.getState()));
-		Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_ENABLE_TRANSFER, null, channel));
-		if (channel.getState().equals(ChannelState.HUNGUP))
-			removePopup(channel);
-	}
-
-	private CallPopup createPopup(AsteriskChannel channel) {
+	private CallPopup createCallPopup(AsteriskChannel channel) {
 		log.finest("Creating CallPopup for Channel: " + channel);
-		CallPopup popup = popups.get(channel);
+		CallPopup popup = callPopups.get(channel);
 		if (popup == null) {
 			popup = new CallPopup(desktop, channel);
-			popups.put(channel, popup);
+			callPopups.put(channel, popup);
 		}
 		return popup;
 	}
 
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		log.severe("Property " + evt.getPropertyName() + " changed to " + evt.getNewValue());
-		log.finest("Property " + evt.getPropertyName() + " changed to " + evt.getNewValue());
-
-		final Desktop desktop = asterisks.get(getSession().getWebSession()).desktop;
-
-		// For each state change of the channel we need to display the popup and/or change its state and time but
-		// we only can manipulate UI components in onEvent() so here we just fire some events and handle them in onEvent()
-		if (evt.getPropertyName().equals("state") && evt.getNewValue() instanceof ChannelState
-				&& evt.getSource() instanceof AsteriskChannel) {
-			AsteriskChannel channel = (AsteriskChannel) evt.getSource();
-			ChannelState state = (ChannelState) evt.getNewValue();
-			Executions.schedule(desktop, Asterisk.this, new Event(ON_ASTERISK_CHANNEL_STATE_CHANGED, null, evt.getSource()));
-			if (state.equals(ChannelState.HUNGUP)) {
-				channel.removePropertyChangeListener(this);
-			}
+	private void updateCallPopup(AsteriskChannel channel, String title) {
+		log.finest("Updating CallPopup for Channel: " + channel + " with Title: " + title);
+		CallPopup popup = callPopups.get(channel);
+		if (popup == null) {
+			popup = createCallPopup(channel);
 		}
 
-		// When we make a Call, we first register to the channel Asterisk-Server->Own Phone. As soon as the own phone is picked up,
-		// we are interested in the channel Own Phone -> Destination Number. So here we simply switch the channels we are listening on
-		if (evt.getPropertyName().equals("dialedChannel")) {
-			if (evt.getSource() instanceof AsteriskChannel && evt.getNewValue() instanceof AsteriskChannel) {
-				AsteriskChannel dialingChannel = (AsteriskChannel) evt.getSource();
-				AsteriskChannel dialedChannel = (AsteriskChannel) evt.getNewValue();
-
-				if (dialingChannel.getDialedChannel().equals(dialedChannel)) {
-					dialingChannel.removePropertyChangeListener(this);
-					dialedChannel.addPropertyChangeListener(this);
-					Executions.schedule(desktop, Asterisk.this, new Event(ON_ASTERISK_CHANNEL_CHANGED, null, new AsteriskChannelSwitch(
-							dialingChannel, dialedChannel)));
-				}
-			}
-		}
-
-		// When a call comes in, the AsteriskChannel is Extern->Server. The Server then creates a new channel Server->Own Phone. Since
-		// we only register for channels which fits the currents users sip channel and the both channels are linked to each other only
-		// as soon as we pickup the own phone, we need another way to get the callers number (for displaying and reverse lookup for example)
-		// so all we have to do to identify the (extern) caller is to listen to the "dialingChannel" property of the Server->Own Phone
-		// channel. But if we make a call to an external number this event gets also fired. Thats why we check if we have a asterisk channel
-		// of interes (own channel) and only then update the caller id.
-		if (evt.getPropertyName().equals("dialingChannel")) {
-			if (evt.getSource() instanceof AsteriskChannel && evt.getNewValue() instanceof AsteriskChannel) {
-				AsteriskChannel dialedChannel = (AsteriskChannel) evt.getSource();
-				AsteriskChannel dialingChannel = (AsteriskChannel) evt.getNewValue(); // Here we have the caller id
-				if (isAsteriskChannelOfInterest(dialedChannel))
-					Executions.schedule(desktop, Asterisk.this, new Event(ON_ASTERISK_CALLER_ID_CHANGED, null, new AsteriskChannelSwitch(
-							dialedChannel, dialingChannel)));
-			}
-		}
-
+		if (title != null && title.length() > 0)
+			Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_UPDATE_TITLE_EVENT, null, title));
+		Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_UPDATE_STATUS_EVENT, null, channel.getState()));
+		Executions.schedule(desktop, popup, new Event(CallPopup.ON_CALLPOPUP_ENABLE_TRANSFER, null, channel));
+		if (channel.getState().equals(ChannelState.HUNGUP))
+			removeCallPopup(channel);
 	}
+
+	private void removeCallPopup(AsteriskChannel channel) {
+		log.finest("Removing CallPopup for Channel: " + channel);
+		CallPopup popup = callPopups.get(channel);
+		if (popup != null) {
+			popup.dispose();
+			popup = null;
+		}
+	}
+
 }

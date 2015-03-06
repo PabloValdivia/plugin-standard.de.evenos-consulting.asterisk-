@@ -99,7 +99,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 		this.desktop = desktop;
 		this.channel = channel;
 
-		// TODO: Chose a better Title
+		// TODO: Chose a better Title. Maybe use system message and allow variables like @CallerId.Name@ and @CallerId.Number@ 
 		titlePrefix = Msg.getMsg(Env.getLanguage(Env.getCtx()), CALLPOPUP_TITLE_LABEL);
 		if (titlePrefix.equals(CALLPOPUP_TITLE_LABEL))
 			titlePrefix = "Call: ";
@@ -115,13 +115,12 @@ public class CallPopup extends Window implements EventListener<Event> {
 
 	private void startTimer() {
 		starttime = System.currentTimeMillis();
-		final CallPopup thePopup = this;
 		timer = new Timer();
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
 				if (desktop != null)
-					Executions.schedule(desktop, thePopup, new Event(ON_CALLPOPUP_UPDATE_TIME_EVENT));
+					Executions.schedule(desktop, CallPopup.this, new Event(ON_CALLPOPUP_UPDATE_TIME_EVENT));
 			}
 		}, 0, 1000);
 	}
@@ -252,7 +251,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 
 		cbMeetMeRooms.setVisible(false);
 		/*
-		 * Commented out because my asterisk server is not able to show me a list of inactive meet me rooms which result in an emtpy list
+		 * Commented out because my asterisk server is not able to show me a list of inactive meet me rooms which results in an empty list
 		chkBoxes.appendChild(chkDynamicMeetMe);
 		loadMeetMeRooms(cbMeetMeRooms);
 
@@ -269,15 +268,6 @@ public class CallPopup extends Window implements EventListener<Event> {
 		container.appendChild(chkBoxes);
 		container.appendChild(cbMeetMeRooms);
 		container.appendChild(txtMeetMeRoom);
-	}
-
-	private void loadMeetMeRooms(Combobox checkBox) {
-		if(channel == null)	return;
-				
-		for(MeetMeRoom room : channel.getServer().getMeetMeRooms()){
-			Comboitem item = checkBox.appendItem(room.getRoomNumber());
-			item.setValue(room.getRoomNumber());
-		}
 	}
 
 	private void loadPhoneNumbers(Combobox comboBox) {
@@ -391,7 +381,7 @@ public class CallPopup extends Window implements EventListener<Event> {
 	private void conferenceCall() {
 	
 		//TODO: Implement static meet me. Problem here: asterisk doesn't provide a list of inactive rooms so we cannot show a list...
-		
+		// maybe read the extension.conf and search for meetme with regex and cache the rooms in static cache
 		
 		//Get Dynamic Meet Me Extension from System Configurator
 		String exten = MSysConfig.getValue(Asterisk.ASTERISK_MEET_ME_EXTEN);
@@ -432,12 +422,12 @@ public class CallPopup extends Window implements EventListener<Event> {
 				if (channelToTransfer == null) {
 					FDialog.error(0, "de.evenos-consulting.asterisk.nochannelfortransfer"); // should never be reached, maybe remove
 					return;
-				}
-				System.out.println("Redirecting partner to " + exten);
+				}//TODO: refactor since also used in transferCall()
+				
+				
 				channelToTransfer.redirect(sipContext, exten, 1);
 			}else{
 				//transfer both
-				System.out.println("Redirecting both to " + exten);
 				channel.redirectBothLegs(sipContext, exten, 1);
 			}
 		}
