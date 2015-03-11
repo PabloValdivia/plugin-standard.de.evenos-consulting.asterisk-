@@ -423,7 +423,6 @@ public class CallPopup extends Window implements EventListener<Event> {
 				channel.redirectBothLegs(sipContext, exten, 1);
 			}
 		}
-
 	}
 
 	private void transferCall() {
