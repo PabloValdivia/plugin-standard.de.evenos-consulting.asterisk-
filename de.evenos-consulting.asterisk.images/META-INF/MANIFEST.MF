@@ -2,6 +2,5 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Images
 Bundle-SymbolicName: de.evenos-consulting.asterisk.images
-Bundle-Version: 1.0.0.qualifier
-Fragment-Host: org.adempiere.ui.zk;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Version: 6.2.0.qualifier
+Fragment-Host: org.adempiere.ui.zk;bundle-version="6.2.0"
